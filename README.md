@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Task Manager Pro
 
 Aplicación full-stack para gestión de tareas con sistema Kanban, drag & drop, comentarios, archivos adjuntos, analytics con gráficos interactivos y notificaciones por email automatizadas.
@@ -43,3 +44,7 @@ task-manager-frontend/ # Frontend React + Vite
 ## 📝 Licencia
 
 MIT - Ver archivo LICENSE
+=======
+# Task_Manager_Pro-
+Full-stack task manager con sistema Kanban, drag &amp; drop, comentarios, archivos adjuntos, analytics con gráficos y notificaciones por email automatizadas. Stack: Node.js, Express, React, MySQL, JWT, Resend.
+>>>>>>> 5fe2b5c93baecbddb2b230835cfc7b9018f45e96
