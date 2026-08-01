@@ -1,9 +1,12 @@
 const Attachment = require('../models/attachmentModel');
+const Task = require('../models/taskModel');
 const fs = require('fs');
-const path = require('path');
 
 const getAttachments = async (req, res) => {
   try {
+    const task = await Task.getById(req.params.taskId, req.user.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
     const attachments = await Attachment.getByTask(req.params.taskId);
     res.json(attachments);
   } catch (err) {
@@ -13,6 +16,9 @@ const getAttachments = async (req, res) => {
 
 const createAttachment = async (req, res) => {
   try {
+    const task = await Task.getById(req.params.taskId, req.user.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
     if (!req.file) return res.status(400).json({ error: 'Archivo requerido' });
 
     const id = await Attachment.create({
@@ -31,6 +37,11 @@ const createAttachment = async (req, res) => {
 
 const deleteAttachment = async (req, res) => {
   try {
+    const attachment = await Attachment.getById(req.params.id);
+    if (!attachment || attachment.user_id !== req.user.id) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+
     const filepath = await Attachment.remove(req.params.id);
     if (filepath && fs.existsSync(filepath)) {
       fs.unlinkSync(filepath);
@@ -43,11 +54,12 @@ const deleteAttachment = async (req, res) => {
 
 const downloadAttachment = async (req, res) => {
   try {
-    const db = require('../../config/db');
-    const [rows] = await db.query('SELECT * FROM attachments WHERE id = ?', [req.params.id]);
-    if (!rows[0]) return res.status(404).json({ error: 'Archivo no encontrado' });
-    
-    res.download(rows[0].filepath);
+    const attachment = await Attachment.getById(req.params.id);
+    if (!attachment || attachment.user_id !== req.user.id) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+
+    res.download(attachment.filepath);
   } catch (err) {
     res.status(500).json({ error: 'Error al descargar archivo' });
   }

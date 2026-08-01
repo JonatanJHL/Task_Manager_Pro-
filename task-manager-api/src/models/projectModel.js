@@ -8,8 +8,8 @@ const getAllByUser = async (userId) => {
   return rows;
 };
 
-const getById = async (id) => {
-  const [rows] = await db.query('SELECT * FROM projects WHERE id = ?', [id]);
+const getById = async (id, userId) => {
+  const [rows] = await db.query('SELECT * FROM projects WHERE id = ? AND user_id = ?', [id, userId]);
   return rows[0];
 };
 
@@ -21,8 +21,9 @@ const create = async ({ name, description, user_id }) => {
   return result.insertId;
 };
 
-const remove = async (id) => {
-  await db.query('DELETE FROM projects WHERE id = ?', [id]);
+const remove = async (id, userId) => {
+  const [result] = await db.query('DELETE FROM projects WHERE id = ? AND user_id = ?', [id, userId]);
+  return result.affectedRows > 0;
 };
 
 module.exports = { getAllByUser, getById, create, remove };

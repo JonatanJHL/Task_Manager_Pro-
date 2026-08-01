@@ -2,14 +2,19 @@ const db = require('../../config/db');
 
 const getByTask = async (taskId) => {
   const [rows] = await db.query(
-    `SELECT a.*, u.name as user_name 
-     FROM attachments a 
-     JOIN users u ON a.user_id = u.id 
-     WHERE a.task_id = ? 
+    `SELECT a.*, u.name as user_name
+     FROM attachments a
+     JOIN users u ON a.user_id = u.id
+     WHERE a.task_id = ?
      ORDER BY a.created_at DESC`,
     [taskId]
   );
   return rows;
+};
+
+const getById = async (id) => {
+  const [rows] = await db.query('SELECT * FROM attachments WHERE id = ?', [id]);
+  return rows[0];
 };
 
 const create = async ({ filename, filepath, mimetype, task_id, user_id }) => {
@@ -26,4 +31,4 @@ const remove = async (id) => {
   return rows[0]?.filepath;
 };
 
-module.exports = { getByTask, create, remove };
+module.exports = { getByTask, getById, create, remove };

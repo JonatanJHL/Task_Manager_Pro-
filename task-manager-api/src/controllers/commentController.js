@@ -4,6 +4,9 @@ const emailService = require('../services/emailService');
 
 const getComments = async (req, res) => {
   try {
+    const task = await Task.getById(req.params.taskId, req.user.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
     const comments = await Comment.getByTask(req.params.taskId);
     const tree = buildCommentTree(comments);
     res.json(tree);
@@ -15,6 +18,9 @@ const getComments = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
+    const task = await Task.getById(req.params.taskId, req.user.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
     const { content, parent_id } = req.body;
     if (!content) return res.status(400).json({ error: 'Contenido requerido' });
 
@@ -25,8 +31,7 @@ const createComment = async (req, res) => {
       parent_id: parent_id || null
     });
 
-    const task = await Task.getById(req.params.taskId);
-    emailService.notifyAdmin(emailService.notifyNewComment(req.user.name, task?.title || 'Tarea', content));
+    emailService.notifyAdmin(emailService.notifyNewComment(req.user.name, task.title, content));
 
     res.status(201).json({ id, message: 'Comentario agregado' });
   } catch (err) {
@@ -37,6 +42,10 @@ const createComment = async (req, res) => {
 
 const deleteComment = async (req, res) => {
   try {
+    const comment = await Comment.getById(req.params.id);
+    if (!comment || comment.user_id !== req.user.id) {
+      return res.status(404).json({ error: 'Comentario no encontrado' });
+    }
     await Comment.remove(req.params.id);
     res.json({ message: 'Comentario eliminado' });
   } catch (err) {
@@ -48,11 +57,11 @@ const deleteComment = async (req, res) => {
 function buildCommentTree(comments) {
   const map = {};
   const roots = [];
-  
+
   comments.forEach(c => {
     map[c.id] = { ...c, children: [] };
   });
-  
+
   comments.forEach(c => {
     if (c.parent_id) {
       map[c.parent_id]?.children.push(map[c.id]);
@@ -60,7 +69,7 @@ function buildCommentTree(comments) {
       roots.push(map[c.id]);
     }
   });
-  
+
   return roots;
 }
 

@@ -13,7 +13,7 @@ const getProjects = async (req, res) => {
 
 const getProject = async (req, res) => {
   try {
-    const project = await Project.getById(req.params.id);
+    const project = await Project.getById(req.params.id, req.user.id);
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
     res.json(project);
   } catch (err) {
@@ -45,7 +45,8 @@ const createProject = async (req, res) => {
 
 const deleteProject = async (req, res) => {
   try {
-    await Project.remove(req.params.id);
+    const deleted = await Project.remove(req.params.id, req.user.id);
+    if (!deleted) return res.status(404).json({ error: 'Proyecto no encontrado' });
     res.json({ message: 'Proyecto eliminado' });
   } catch (err) {
     console.error('Error deleteProject:', err);

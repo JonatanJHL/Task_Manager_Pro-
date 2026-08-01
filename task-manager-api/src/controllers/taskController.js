@@ -15,7 +15,7 @@ const getTasks = async (req, res) => {
 
 const getTask = async (req, res) => {
   try {
-    const task = await Task.getById(req.params.id);
+    const task = await Task.getById(req.params.id, req.user.id);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
     res.json(task);
   } catch (err) {
@@ -30,6 +30,12 @@ const createTask = async (req, res) => {
     if (!title || !project_id) {
       return res.status(400).json({ error: 'title y project_id son requeridos' });
     }
+
+    const project = await Project.getById(project_id, req.user.id);
+    if (!project) {
+      return res.status(404).json({ error: 'Proyecto no encontrado' });
+    }
+
     const id = await Task.create({
       title, description,
       status: status || 'pending',
@@ -39,7 +45,6 @@ const createTask = async (req, res) => {
       due_date,
     });
 
-    const project = await Project.getById(project_id);
     emailService.notifyAdmin(emailService.notifyNewTask(req.user.name, title, project?.name || 'Proyecto'));
 
     res.status(201).json({ id, message: 'Tarea creada' });
@@ -51,10 +56,12 @@ const createTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const oldTask = await Task.getById(req.params.id);
-    await Task.update(req.params.id, req.body);
+    const oldTask = await Task.getById(req.params.id, req.user.id);
+    if (!oldTask) return res.status(404).json({ error: 'Tarea no encontrada' });
 
-    if (req.body.status && oldTask) {
+    await Task.update(req.params.id, req.user.id, req.body);
+
+    if (req.body.status) {
       emailService.notifyAdmin(emailService.notifyTaskStatusChange(req.user.name, oldTask.title, req.body.status));
     }
 
@@ -67,7 +74,8 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
   try {
-    await Task.remove(req.params.id);
+    const deleted = await Task.remove(req.params.id, req.user.id);
+    if (!deleted) return res.status(404).json({ error: 'Tarea no encontrada' });
     res.json({ message: 'Tarea eliminada' });
   } catch (err) {
     console.error('Error deleteTask:', err);

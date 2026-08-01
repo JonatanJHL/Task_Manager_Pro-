@@ -11,7 +11,12 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
 
-app.use(cors());
+// Si ALLOWED_ORIGIN está definido (recomendado en despliegues compartidos),
+// solo ese origen puede llamar a la API. Sin configurar, se mantiene abierto
+// para no romper el uso local/individual de siempre.
+const allowedOrigin = process.env.ALLOWED_ORIGIN;
+app.use(cors(allowedOrigin ? { origin: allowedOrigin } : {}));
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 

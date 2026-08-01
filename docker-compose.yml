@@ -1,0 +1,59 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./task-manager-api/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    networks:
+      - taskmanager-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # Sin "ports": nadie fuera de esta red de Docker puede hablarle a MySQL
+    # directamente, ni siquiera otras máquinas de la red privada del equipo.
+
+  api:
+    build: ./task-manager-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      FROM_EMAIL: ${FROM_EMAIL}
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN}
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - taskmanager-net
+    ports:
+      - "3000:3000"
+
+  web:
+    build: ./task-manager-frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - taskmanager-net
+    ports:
+      - "8080:80"
+
+networks:
+  taskmanager-net:
+
+volumes:
+  db_data:
+  uploads_data:
