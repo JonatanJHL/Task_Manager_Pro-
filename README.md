@@ -82,6 +82,122 @@ setup.sh               # Setup de un solo comando
 - 🛡️ **Protección Anti-IDOR Integrada**: Validación de pertenencia en todas las rutas de API para garantizar que ningún usuario acceda o modifique recursos ajenos.
 - ✉️ **Notificaciones por Email (Resend)**: Envío automático de correos en eventos clave (creación de tarea, cambio de estado, nuevos comentarios).
 
+## 📖 Guía Visual de Funcionamiento y Mockups de Pantalla
+
+A continuación se muestra en detalle cómo se interactúa con cada módulo y acción de **Task Manager Pro**:
+
+### 1. 📋 Tablero Kanban & Drag & Drop
+El tablero organiza las tareas en 3 columnas principales. Al arrastrar una tarjeta entre columnas, el estado se actualiza dinámicamente.
+
+```text
+┌───────────────────────────┬───────────────────────────┬───────────────────────────┐
+│ 🟡 POR HACER (To Do)      │ 🔵 EN PROGRESO            │ 🟢 COMPLETADO (Done)      │
+├───────────────────────────┼───────────────────────────┼───────────────────────────┤
+│ ┌───────────────────────┐ │ ┌───────────────────────┐ │ ┌───────────────────────┐ │
+│ │ 🔴 Alta               │ │ │ 🟡 Media              │ │ │ 🟢 Baja               │ │
+│ │ Crear API Autenticación│ │ │ Implementar Dashboard │ │ │ Setup Docker Compose  │ │
+│ │ 📅 Vence: 15/Aug      │ │ │ 📅 Vence: 12/Aug      │ │ │ 📅 Vence: 05/Aug      │ │
+│ │ 💬 (3)  📎 (2)        │ │ │ 💬 (1)  📎 (0)        │ │ │ 💬 (5)  📎 (1)        │ │
+│ └───────────────────────┘ │ └───────────────────────┘ │ └───────────────────────┘ │
+│           │               │        🖱️ Arrastrar ───►  │                           │
+│ ┌───────────────────────┐ │                           │                           │
+│ │ 🟡 Media              │ │                           │                           │
+│ │ Diseñar Mockups UI    │ │                           │                           │
+│ └───────────────────────┘ │                           │                           │
+└───────────────────────────┴───────────────────────────┴───────────────────────────┘
+```
+
+#### Acciones en el Tablero:
+1. **Crear Tarea**: Haz clic en `+ Nueva Tarea`, ingresa título, descripción, prioridad (`Baja`, `Media`, `Alta`) y fecha límite.
+2. **Arrastrar & Soltar**: Arrastra cualquier tarjeta hacia la columna de destino. El servidor recibe la petición y actualiza el estado.
+3. **Filtros**: Selecciona un proyecto en la lista desplegable superior para filtrar las tarjetas del proyecto activo.
+
+---
+
+### 2. 💬 Sistema de Comentarios en Hilo (Threaded Comments)
+Cada tarjeta cuenta con su propio panel modal de discusión estructurada.
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ 💬 Comentarios de la Tarea: "Crear API Autenticación"                  │
+├────────────────────────────────────────────────────────────────────────┤
+│ 👤 Carlos Dev  (01/Aug 14:30)                                          │
+│ └─ "Ya agregué el middleware de JWT. Falta probar las cookies."        │
+│    [ ↩️ Responder ]  [ 🗑️ Eliminar ]                                   │
+│                                                                        │
+│    └─ 👤 Ana Tech Lead  (01/Aug 14:35)                                │
+│       └─ "Excelente Carlos. Recuerda validar la expiración a 24h."     │
+│          [ ↩️ Responder ]                                               │
+│                                                                        │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ ✍️ Escribe un comentario...                                         │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+│ [ 🚀 Publicar Comentario ]                                             │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Acciones en Comentarios:
+- **Publicar en Hilo**: Haz clic en el ícono `💬` de cualquier tarjeta.
+- **Respuestas Anidadas**: Haz clic en `Responder` debajo de un comentario para abrir el cuadro de respuesta hijo.
+- **Eliminación Segura**: Solo el autor original puede eliminar su propio comentario.
+
+---
+
+### 3. 📎 Gestión de Archivos Adjuntos (Attachments)
+Permite subir evidencias, diagramas de arquitectura o requerimientos en PDF, PNG, ZIP, etc.
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ 📎 Archivos Adjuntos                                                   │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📤 [ Subir archivo ]  (Arrastra o selecciona de tu equipo)             │
+│                                                                        │
+│ 📄 diagram_arquitectura.png   (Subido por Carlos Dev)                  │
+│    [ 📥 Descargar ]  [ 🗑️ Eliminar ]                                   │
+│                                                                        │
+│ 📦 requerimientos_v1.pdf      (Subido por Ana Tech Lead)               │
+│    [ 📥 Descargar ]  [ 🗑️ Eliminar ]                                   │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 4. 📊 Analytics e Informes de Productividad (Recharts)
+Dashboard visual interactivo accesible desde la barra superior (`/analytics`).
+
+```text
+┌───────────────────────────────────────┬───────────────────────────────────────┐
+│ 📊 Tareas por Estado                  │ 🎨 Distribución por Prioridad         │
+├───────────────────────────────────────┼───────────────────────────────────────┤
+│                                       │                                       │
+│  10 ┤  █                              │              ██████ (45% Alta)        │
+│   8 ┤  █      █                       │            ██        ██               │
+│   6 ┤  █      █      █                │           ██  (35%)   ██ (20% Baja)   │
+│   4 ┤  █      █      █                │            ██        ██               │
+│   2 ┤  █      █      █                │              ██████ (Media)           │
+│   0 └────┬──────┬──────┬──            │                                       │
+│        Por    Progreso Completado     │                                       │
+│        Hacer                          │                                       │
+└───────────────────────────────────────┴───────────────────────────────────────┘
+```
+
+#### Métricas desplegadas:
+- **Resumen Global**: Total de tareas, tareas completadas y % de tasa de éxito.
+- **Desglose de Estados**: Gráficos de barras comparativos.
+- **Distribución de Carga**: Gráfico circular (Dona) por severidad/prioridad.
+
+---
+
+### 5. ✉️ Notificaciones de Email Automatizadas (Resend Flow)
+
+```mermaid
+flowchart LR
+    A[👨‍💻 Usuario crea Tarea / Comentario / Push] --> B(☁️ Express API Backend)
+    B --> C{Resend API Key?}
+    C -- Sí --> D[✉️ Envío de Email HTML a Admin / Asignados]
+    C -- No --> E[📝 Log de consola de desarrollo]
+```
+
 ## 🔒 Notas de seguridad al compartir con el equipo
 
 - Cambia `JWT_SECRET` y `DB_PASSWORD` en `.env` antes de usarlo con gente real (el script ya genera el `JWT_SECRET` por ti).
