@@ -139,7 +139,7 @@ function FileModal({ isOpen, onClose, taskId }) {
               <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#f8fafc', borderRadius: 8, marginBottom: 8 }}>
                 <div><span style={{ fontWeight: 500 }}>{f.filename}</span><span style={{ fontSize: 12, color: '#64748b', marginLeft: 8 }}>{f.user_name}</span></div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <a href={`http://localhost:3000/api/attachments/${f.id}/download`} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 12 }}>Descargar</a>
+                  <a href={`${api.defaults.baseURL}/attachments/${f.id}/download`} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 12 }}>Descargar</a>
                   <button onClick={() => handleDelete(f.id)} className="btn btn-danger" style={{ padding: '4px 8px', fontSize: 12 }}>Eliminar</button>
                 </div>
               </div>

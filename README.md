@@ -1,8 +1,17 @@
+<div align="center">
+
+<img src="task_manager_pro.png" width="220" alt="Task Manager Pro Logo"/>
+
 # Task Manager Pro
 
-Aplicación full-stack para gestión de tareas con sistema Kanban, drag & drop, comentarios, archivos adjuntos, analytics con gráficos interactivos y notificaciones por email automatizadas.
+**Aplicación full-stack para gestión de tareas con sistema Kanban, drag & drop, comentarios, archivos adjuntos, analytics con gráficos interactivos y notificaciones por email automatizadas.**
 
-**Stack:** Node.js, Express, React, MySQL, JWT, Resend
+[![Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20React%20%7C%20MySQL%20%7C%20Docker-blue)](#)
+[![License](https://img.shields.io/badge/License-MIT-green)](#)
+
+</div>
+
+---
 
 ## 🚀 Quick Start (Docker — recomendado para equipos)
 
@@ -63,6 +72,16 @@ docker-compose.yml     # Orquesta db + api + web
 setup.sh               # Setup de un solo comando
 ```
 
+## ✨ Características y Acciones Disponibles
+
+- 📋 **Tablero Kanban Interactivo**: Organización visual de tareas por columnas (`To Do`, `In Progress`, `Done`) con soporte de **Drag & Drop** en tiempo real.
+- 🎯 **Gestión Completa de Proyectos y Tareas**: Creación, edición, eliminación y filtrado por prioridad (`Baja`, `Media`, `Alta`) y fechas de vencimiento.
+- 💬 **Comentarios en Hilo (Threaded Comments)**: Discusión estructurada por tarea con soporte para respuestas anidadas y eliminación por autor.
+- 📎 **Archivos Adjuntos**: Carga y descarga dinámica de archivos directamente desde el panel de tareas.
+- 📊 **Analytics e Informes de Productividad**: Gráficos interactivos de barra y dona (vía Recharts) para medir tareas por estado, prioridad y tasa de completado.
+- 🛡️ **Protección Anti-IDOR Integrada**: Validación de pertenencia en todas las rutas de API para garantizar que ningún usuario acceda o modifique recursos ajenos.
+- ✉️ **Notificaciones por Email (Resend)**: Envío automático de correos en eventos clave (creación de tarea, cambio de estado, nuevos comentarios).
+
 ## 🔒 Notas de seguridad al compartir con el equipo
 
 - Cambia `JWT_SECRET` y `DB_PASSWORD` en `.env` antes de usarlo con gente real (el script ya genera el `JWT_SECRET` por ti).
@@ -72,6 +91,3 @@ setup.sh               # Setup de un solo comando
 ## 📝 Licencia
 
 MIT - Ver archivo LICENSE
-=======
-# Task_Manager_Pro-
-Full-stack task manager con sistema Kanban, drag &amp; drop, comentarios, archivos adjuntos, analytics con gráficos y notificaciones por email automatizadas. Stack: Node.js, Express, React, MySQL, JWT, Resend.
