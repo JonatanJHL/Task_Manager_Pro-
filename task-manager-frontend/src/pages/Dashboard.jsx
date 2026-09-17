@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 const COLORS = ['#f59e0b', '#3b82f6', '#10b981'];
 
 function CommentModal({ isOpen, onClose, taskId }) {
+  const { user } = useAuth();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
@@ -57,8 +58,10 @@ function CommentModal({ isOpen, onClose, taskId }) {
         <div style={{ marginTop: 8 }}>
           <button onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
             style={{ fontSize: 12, padding: '4px 8px', marginRight: 8, background: 'none', border: '1px solid #cbd5e1', borderRadius: 4, cursor: 'pointer' }}>Responder</button>
-          <button onClick={() => handleDelete(comment.id)}
-            style={{ fontSize: 12, padding: '4px 8px', background: 'none', border: '1px solid #fecaca', borderRadius: 4, color: '#ef4444', cursor: 'pointer' }}>Eliminar</button>
+          {user?.role === 'admin' && (
+            <button onClick={() => handleDelete(comment.id)}
+              style={{ fontSize: 12, padding: '4px 8px', background: 'none', border: '1px solid #fecaca', borderRadius: 4, color: '#ef4444', cursor: 'pointer' }}>Eliminar</button>
+          )}
         </div>
       </div>
       {replyingTo === comment.id && (
@@ -98,6 +101,7 @@ function CommentModal({ isOpen, onClose, taskId }) {
 }
 
 function FileModal({ isOpen, onClose, taskId }) {
+  const { user } = useAuth();
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
 
@@ -140,7 +144,9 @@ function FileModal({ isOpen, onClose, taskId }) {
                 <div><span style={{ fontWeight: 500 }}>{f.filename}</span><span style={{ fontSize: 12, color: '#64748b', marginLeft: 8 }}>{f.user_name}</span></div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <a href={`${api.defaults.baseURL}/attachments/${f.id}/download`} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 12 }}>Descargar</a>
-                  <button onClick={() => handleDelete(f.id)} className="btn btn-danger" style={{ padding: '4px 8px', fontSize: 12 }}>Eliminar</button>
+                  {user?.role === 'admin' && (
+                    <button onClick={() => handleDelete(f.id)} className="btn btn-danger" style={{ padding: '4px 8px', fontSize: 12 }}>Eliminar</button>
+                  )}
                 </div>
               </div>
             ))}
@@ -250,6 +256,7 @@ function ProjectModal({ isOpen, onClose, onSubmit }) {
 }
 
 function TaskCard({ task, onEdit, onDelete, onStatusChange, onComments, onFiles, onDragStart, onDragEnd, onDragOver, onDrop }) {
+  const { user } = useAuth();
   const [isDragging, setIsDragging] = useState(false);
 
   const formatDate = (date) => {
@@ -292,7 +299,9 @@ function TaskCard({ task, onEdit, onDelete, onStatusChange, onComments, onFiles,
         <button className="edit-btn" onClick={() => onEdit(task)}>Editar</button>
         <button className="edit-btn" onClick={() => onComments(task.id)}>💬</button>
         <button className="edit-btn" onClick={() => onFiles(task.id)}>📎</button>
-        <button className="delete-btn" onClick={() => onDelete(task.id)}>Eliminar</button>
+        {user?.role === 'admin' && (
+          <button className="delete-btn" onClick={() => onDelete(task.id)}>Eliminar</button>
+        )}
       </div>
     </div>
   );
@@ -425,6 +434,11 @@ export default function Dashboard() {
           <Link to="/analytics" style={{ padding: '8px 16px', background: '#10b981', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
             📊 Analytics
           </Link>
+          {user?.role === 'admin' && (
+            <Link to="/admin" style={{ padding: '8px 16px', background: '#6366f1', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
+              🛠️ Admin
+            </Link>
+          )}
           <div className="avatar">{user?.name?.charAt(0).toUpperCase()}</div>
           <span>{user?.name}</span>
           <button className="btn btn-secondary" onClick={logout}>Salir</button>
@@ -481,7 +495,9 @@ export default function Dashboard() {
             </select>
           </div>
           <div className="btn-group">
-            <button className="btn btn-primary" onClick={() => setShowProjectModal(true)}>+ Proyecto</button>
+            {user?.role === 'admin' && (
+              <button className="btn btn-primary" onClick={() => setShowProjectModal(true)}>+ Proyecto</button>
+            )}
             <button className="btn btn-success" onClick={() => { setEditingTask(null); setShowTaskModal(true); }} disabled={!selectedProject}>+ Tarea</button>
           </div>
         </div>

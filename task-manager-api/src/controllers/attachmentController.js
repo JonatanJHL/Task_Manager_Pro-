@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const getAttachments = async (req, res) => {
   try {
-    const task = await Task.getById(req.params.taskId, req.user.id);
+    const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
 
     const attachments = await Attachment.getByTask(req.params.taskId);
@@ -16,7 +16,7 @@ const getAttachments = async (req, res) => {
 
 const createAttachment = async (req, res) => {
   try {
-    const task = await Task.getById(req.params.taskId, req.user.id);
+    const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
 
     if (!req.file) return res.status(400).json({ error: 'Archivo requerido' });
@@ -38,7 +38,7 @@ const createAttachment = async (req, res) => {
 const deleteAttachment = async (req, res) => {
   try {
     const attachment = await Attachment.getById(req.params.id);
-    if (!attachment || attachment.user_id !== req.user.id) {
+    if (!attachment) {
       return res.status(404).json({ error: 'Archivo no encontrado' });
     }
 
@@ -55,7 +55,7 @@ const deleteAttachment = async (req, res) => {
 const downloadAttachment = async (req, res) => {
   try {
     const attachment = await Attachment.getById(req.params.id);
-    if (!attachment || attachment.user_id !== req.user.id) {
+    if (!attachment) {
       return res.status(404).json({ error: 'Archivo no encontrado' });
     }
 

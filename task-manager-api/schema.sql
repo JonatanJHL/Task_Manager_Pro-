@@ -6,7 +6,20 @@ CREATE TABLE IF NOT EXISTS users (
   name       VARCHAR(100) NOT NULL,
   email      VARCHAR(100) NOT NULL UNIQUE,
   password   VARCHAR(255) NOT NULL,
+  role       ENUM('admin','guest') NOT NULL DEFAULT 'guest',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS invitations (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  token       VARCHAR(255) NOT NULL UNIQUE,
+  email       VARCHAR(100) NOT NULL,
+  role        ENUM('admin','guest') NOT NULL DEFAULT 'guest',
+  invited_by  INT NOT NULL,
+  expires_at  TIMESTAMP NOT NULL,
+  used_at     TIMESTAMP DEFAULT NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (invited_by) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS projects (

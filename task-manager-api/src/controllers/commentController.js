@@ -4,7 +4,7 @@ const emailService = require('../services/emailService');
 
 const getComments = async (req, res) => {
   try {
-    const task = await Task.getById(req.params.taskId, req.user.id);
+    const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
 
     const comments = await Comment.getByTask(req.params.taskId);
@@ -18,7 +18,7 @@ const getComments = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
-    const task = await Task.getById(req.params.taskId, req.user.id);
+    const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
 
     const { content, parent_id } = req.body;
@@ -43,7 +43,7 @@ const createComment = async (req, res) => {
 const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.getById(req.params.id);
-    if (!comment || comment.user_id !== req.user.id) {
+    if (!comment) {
       return res.status(404).json({ error: 'Comentario no encontrado' });
     }
     await Comment.remove(req.params.id);

@@ -8,6 +8,8 @@ const taskRoutes = require('./routes/taskRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const collaborationRoutes = require('./routes/collaborationRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const invitationRoutes = require('./routes/invitationRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/invitations', invitationRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api', collaborationRoutes);
 
 const PORT = process.env.PORT || 3000;

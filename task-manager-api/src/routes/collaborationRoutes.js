@@ -5,6 +5,7 @@ const path = require('path');
 const { getComments, createComment, deleteComment } = require('../controllers/commentController');
 const { getAttachments, createAttachment, deleteAttachment, downloadAttachment } = require('../controllers/attachmentController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const requireRole = require('../middlewares/roleMiddleware');
 
 router.use(authMiddleware);
 
@@ -25,11 +26,11 @@ const upload = multer({
 
 router.get('/tasks/:taskId/comments', getComments);
 router.post('/tasks/:taskId/comments', createComment);
-router.delete('/comments/:id', deleteComment);
+router.delete('/comments/:id', requireRole('admin'), deleteComment);
 
 router.get('/tasks/:taskId/attachments', getAttachments);
 router.post('/tasks/:taskId/attachments', upload.single('file'), createAttachment);
-router.delete('/attachments/:id', deleteAttachment);
+router.delete('/attachments/:id', requireRole('admin'), deleteAttachment);
 router.get('/attachments/:id/download', downloadAttachment);
 
 // Errores de multer (ej. archivo > 20MB) no llegan al try/catch del

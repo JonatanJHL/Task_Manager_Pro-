@@ -4,10 +4,17 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
+import Admin from './pages/Admin';
 
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();
   return user ? children : <Navigate to="/login" />;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" />;
+  return user.role === 'admin' ? children : <Navigate to="/dashboard" />;
 };
 
 export default function App() {
@@ -22,6 +29,9 @@ export default function App() {
           } />
           <Route path="/analytics" element={
             <PrivateRoute><Analytics /></PrivateRoute>
+          } />
+          <Route path="/admin" element={
+            <AdminRoute><Admin /></AdminRoute>
           } />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>

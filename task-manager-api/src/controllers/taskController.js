@@ -5,7 +5,7 @@ const emailService = require('../services/emailService');
 const getTasks = async (req, res) => {
   try {
     const { project_id } = req.query;
-    const tasks = await Task.getAllByUser(req.user.id, project_id);
+    const tasks = await Task.getAll(project_id);
     res.json(tasks);
   } catch (err) {
     console.error('Error getTasks:', err);
@@ -15,7 +15,7 @@ const getTasks = async (req, res) => {
 
 const getTask = async (req, res) => {
   try {
-    const task = await Task.getById(req.params.id, req.user.id);
+    const task = await Task.getById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
     res.json(task);
   } catch (err) {
@@ -31,7 +31,7 @@ const createTask = async (req, res) => {
       return res.status(400).json({ error: 'title y project_id son requeridos' });
     }
 
-    const project = await Project.getById(project_id, req.user.id);
+    const project = await Project.getById(project_id);
     if (!project) {
       return res.status(404).json({ error: 'Proyecto no encontrado' });
     }
@@ -42,7 +42,7 @@ const createTask = async (req, res) => {
       priority: priority || 'medium',
       project_id,
       user_id: req.user.id,
-      due_date,
+      due_date: due_date || null,
     });
 
     emailService.notifyAdmin(emailService.notifyNewTask(req.user.name, title, project?.name || 'Proyecto'));
@@ -56,10 +56,10 @@ const createTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const oldTask = await Task.getById(req.params.id, req.user.id);
+    const oldTask = await Task.getById(req.params.id);
     if (!oldTask) return res.status(404).json({ error: 'Tarea no encontrada' });
 
-    await Task.update(req.params.id, req.user.id, req.body);
+    await Task.update(req.params.id, req.body);
 
     if (req.body.status) {
       emailService.notifyAdmin(emailService.notifyTaskStatusChange(req.user.name, oldTask.title, req.body.status));
@@ -74,7 +74,7 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
   try {
-    const deleted = await Task.remove(req.params.id, req.user.id);
+    const deleted = await Task.remove(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Tarea no encontrada' });
     res.json({ message: 'Tarea eliminada' });
   } catch (err) {

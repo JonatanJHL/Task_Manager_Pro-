@@ -490,14 +490,50 @@ const sendReportEmail = (userName, period, stats, topProjects) => {
   };
 };
 
-module.exports = { 
-  sendWelcomeEmail, 
-  sendReportEmail, 
-  sendTutorialEmail, 
+const sendInvitationEmail = (inviteLink, role) => ({
+  subject: '🎟️ Invitación a Task Manager Pro',
+  html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>${BASE_STYLES}</style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">🎟️</div>
+      <h3>Invitación</h3>
+      <h1>Te invitaron a Task Manager Pro</h1>
+      <p style="text-align: center;">
+        Fuiste invitado como <span class="highlight">${role === 'admin' ? 'administrador' : 'colaborador'}</span>.
+        Usa el siguiente enlace para crear tu cuenta.
+      </p>
+      <div style="text-align: center;">
+        <a href="${inviteLink}" class="btn">Crear mi cuenta →</a>
+      </div>
+      <p style="text-align: center; font-size: 13px; color: #64748b;">
+        Este enlace expira en 7 días y solo puede usarse una vez.
+      </p>
+      <div class="footer">
+        Task Manager Pro © ${new Date().getFullYear()}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+});
+
+module.exports = {
+  sendWelcomeEmail,
+  sendReportEmail,
+  sendTutorialEmail,
   notifyNewUser,
   notifyNewTask,
   notifyTaskStatusChange,
   notifyNewProject,
   notifyNewComment,
-  tutorialSequence 
+  sendInvitationEmail,
+  tutorialSequence
 };

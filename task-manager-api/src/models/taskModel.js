@@ -1,11 +1,11 @@
 const db = require('../../config/db');
 
-const getAllByUser = async (userId, projectId) => {
-  let query = 'SELECT * FROM tasks WHERE user_id = ?';
-  const params = [userId];
+const getAll = async (projectId) => {
+  let query = 'SELECT * FROM tasks';
+  const params = [];
 
   if (projectId) {
-    query += ' AND project_id = ?';
+    query += ' WHERE project_id = ?';
     params.push(projectId);
   }
 
@@ -14,8 +14,8 @@ const getAllByUser = async (userId, projectId) => {
   return rows;
 };
 
-const getById = async (id, userId) => {
-  const [rows] = await db.query('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, userId]);
+const getById = async (id) => {
+  const [rows] = await db.query('SELECT * FROM tasks WHERE id = ?', [id]);
   return rows[0];
 };
 
@@ -27,7 +27,7 @@ const create = async ({ title, description, status, priority, project_id, user_i
   return result.insertId;
 };
 
-const update = async (id, userId, fields) => {
+const update = async (id, fields) => {
   const allowedFields = ['title', 'description', 'status', 'priority', 'due_date'];
   const updates = [];
   const values = [];
@@ -41,14 +41,14 @@ const update = async (id, userId, fields) => {
 
   if (updates.length === 0) return { affectedRows: 0 };
 
-  values.push(id, userId);
-  const [result] = await db.query(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, values);
+  values.push(id);
+  const [result] = await db.query(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`, values);
   return result;
 };
 
-const remove = async (id, userId) => {
-  const [result] = await db.query('DELETE FROM tasks WHERE id = ? AND user_id = ?', [id, userId]);
+const remove = async (id) => {
+  const [result] = await db.query('DELETE FROM tasks WHERE id = ?', [id]);
   return result.affectedRows > 0;
 };
 
-module.exports = { getAllByUser, getById, create, update, remove };
+module.exports = { getAll, getById, create, update, remove };

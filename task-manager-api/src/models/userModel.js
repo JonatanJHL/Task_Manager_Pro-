@@ -10,12 +10,17 @@ const findById = async (id) => {
   return rows[0];
 };
 
-const create = async ({ name, email, password }) => {
+const create = async ({ name, email, password, role = 'guest' }) => {
   const [result] = await db.query(
-    'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-    [name, email, password]
+    'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+    [name, email, password, role]
   );
   return result.insertId;
 };
 
-module.exports = { findByEmail, findById, create };
+const findAll = async () => {
+  const [rows] = await db.query('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC');
+  return rows;
+};
+
+module.exports = { findByEmail, findById, create, findAll };

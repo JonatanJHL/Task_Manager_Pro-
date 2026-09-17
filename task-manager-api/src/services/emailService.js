@@ -1,14 +1,15 @@
 const { Resend } = require('resend');
-const { 
-  sendWelcomeEmail, 
-  sendReportEmail, 
-  sendTutorialEmail, 
+const {
+  sendWelcomeEmail,
+  sendReportEmail,
+  sendTutorialEmail,
   tutorialSequence,
   notifyNewUser,
   notifyNewTask,
   notifyTaskStatusChange,
   notifyNewProject,
-  notifyNewComment
+  notifyNewComment,
+  sendInvitationEmail
 } = require('./emailTemplates');
 
 const resendClient = process.env.RESEND_API_KEY 
@@ -63,6 +64,33 @@ const notifyAdmin = async (emailData) => {
   return sendEmail(ADMIN_EMAIL, emailData.subject, emailData.html);
 };
 
+// No usa sendEmail() a propósito: esa función siempre hace CC a ADMIN_EMAIL,
+// y el link de invitación (token de un solo uso) no debe filtrarse ahí.
+const sendInvitationEmailTo = async (email, inviteLink, role) => {
+  const { subject, html } = sendInvitationEmail(inviteLink, role);
+  try {
+    if (resendClient) {
+      const { data, error } = await resendClient.emails.send({
+        from: FROM_EMAIL,
+        to: [email],
+        subject,
+        html
+      });
+      if (error) throw error;
+      console.log('✅ Invitación enviada a:', email);
+      return data;
+    } else {
+      console.log('📧 [MODO PRUEBA] Invitación');
+      console.log('   Para:', email);
+      console.log('   Link:', inviteLink);
+      return { id: 'test-' + Date.now() };
+    }
+  } catch (err) {
+    console.error('❌ Error enviando invitación:', err.message);
+    throw err;
+  }
+};
+
 const scheduleTutorialSequence = async (userId, User) => {
   for (let i = 0; i < tutorialSequence.length; i++) {
     const delay = (i + 1) * 24 * 60 * 60 * 1000;
@@ -90,5 +118,6 @@ module.exports = {
   notifyTaskStatusChange,
   notifyNewProject,
   notifyNewComment,
-  scheduleTutorialSequence
+  scheduleTutorialSequence,
+  sendInvitationEmailTo
 };

@@ -3,7 +3,7 @@ const emailService = require('../services/emailService');
 
 const getProjects = async (req, res) => {
   try {
-    const projects = await Project.getAllByUser(req.user.id);
+    const projects = await Project.getAll();
     res.json(projects);
   } catch (err) {
     console.error('Error getProjects:', err);
@@ -13,7 +13,7 @@ const getProjects = async (req, res) => {
 
 const getProject = async (req, res) => {
   try {
-    const project = await Project.getById(req.params.id, req.user.id);
+    const project = await Project.getById(req.params.id);
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
     res.json(project);
   } catch (err) {
@@ -45,7 +45,7 @@ const createProject = async (req, res) => {
 
 const deleteProject = async (req, res) => {
   try {
-    const deleted = await Project.remove(req.params.id, req.user.id);
+    const deleted = await Project.remove(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Proyecto no encontrado' });
     res.json({ message: 'Proyecto eliminado' });
   } catch (err) {
