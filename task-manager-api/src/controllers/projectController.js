@@ -1,6 +1,7 @@
 const Project = require('../models/projectModel');
 const ProjectMember = require('../models/projectMemberModel');
 const ActivityLog = require('../models/activityLogModel');
+const User = require('../models/userModel');
 const emailService = require('../services/emailService');
 
 const getProjects = async (req, res) => {
@@ -52,6 +53,14 @@ const addMember = async (req, res) => {
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
     await ProjectMember.addMember(req.params.id, user_id);
+
+    const member = await User.findById(user_id);
+    if (member) {
+      emailService.sendProjectAssignedEmailTo(member, project.name).catch(err => {
+        console.error('Error enviando notificación de asignación:', err.message);
+      });
+    }
+
     res.status(201).json({ message: 'Miembro agregado' });
   } catch (err) {
     console.error('Error addMember:', err);

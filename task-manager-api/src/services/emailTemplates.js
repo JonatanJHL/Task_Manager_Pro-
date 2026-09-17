@@ -525,6 +525,38 @@ const sendInvitationEmail = (inviteLink, role) => ({
     `
 });
 
+const sendProjectAssignedEmail = (userName, projectName, dashboardLink) => ({
+  subject: '📁 Te asignaron a un proyecto',
+  html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>${BASE_STYLES}</style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">📁</div>
+      <h3>Nueva asignación</h3>
+      <h1>Hola, ${userName}</h1>
+      <p style="text-align: center;">
+        Te asignaron al proyecto <span class="highlight">${projectName}</span>.
+        Ya puedes ver sus tareas y crear las tuyas.
+      </p>
+      <div style="text-align: center;">
+        <a href="${dashboardLink}" class="btn">Ver proyecto →</a>
+      </div>
+      <div class="footer">
+        Task Manager Pro © ${new Date().getFullYear()}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+});
+
 module.exports = {
   sendWelcomeEmail,
   sendReportEmail,
@@ -535,5 +567,6 @@ module.exports = {
   notifyNewProject,
   notifyNewComment,
   sendInvitationEmail,
+  sendProjectAssignedEmail,
   tutorialSequence
 };

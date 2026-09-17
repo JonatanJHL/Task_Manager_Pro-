@@ -9,7 +9,8 @@ const {
   notifyTaskStatusChange,
   notifyNewProject,
   notifyNewComment,
-  sendInvitationEmail
+  sendInvitationEmail,
+  sendProjectAssignedEmail
 } = require('./emailTemplates');
 
 const resendClient = process.env.RESEND_API_KEY 
@@ -91,6 +92,12 @@ const sendInvitationEmailTo = async (email, inviteLink, role) => {
   }
 };
 
+const sendProjectAssignedEmailTo = async (user, projectName) => {
+  const dashboardLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`;
+  const email = sendProjectAssignedEmail(user.name, projectName, dashboardLink);
+  return sendEmail(user.email, email.subject, email.html);
+};
+
 const scheduleTutorialSequence = async (userId, User) => {
   for (let i = 0; i < tutorialSequence.length; i++) {
     const delay = (i + 1) * 24 * 60 * 60 * 1000;
@@ -119,5 +126,6 @@ module.exports = {
   notifyNewProject,
   notifyNewComment,
   scheduleTutorialSequence,
-  sendInvitationEmailTo
+  sendInvitationEmailTo,
+  sendProjectAssignedEmailTo
 };
