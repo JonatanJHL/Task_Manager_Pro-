@@ -4,7 +4,7 @@
 
 # Task Manager Pro
 
-**Aplicación full-stack para gestión de tareas con sistema Kanban, drag & drop, comentarios, archivos adjuntos, analytics con gráficos interactivos y notificaciones por email automatizadas.**
+**Aplicación full-stack para gestión de tareas con sistema Kanban, drag & drop, comentarios, archivos adjuntos, analytics con gráficos interactivos, notificaciones por email automatizadas, y panel de administración con roles e invitaciones para colaborar en equipo.**
 
 [![Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20React%20%7C%20MySQL%20%7C%20Docker-blue)](#)
 [![License](https://img.shields.io/badge/License-MIT-green)](#)
@@ -24,6 +24,21 @@ Requisito único: tener [Docker Desktop](https://www.docker.com/products/docker-
 Esto crea tu `.env` (con un `JWT_SECRET` generado automáticamente) y levanta base de datos, backend y frontend con un solo comando. Al terminar, abre **http://localhost:8080**.
 
 Para que el resto del equipo entre desde su propia computadora (misma red privada/VPN/oficina), comparten la URL `http://<IP-de-esta-máquina>:8080` — el frontend detecta solo a qué servidor hablarle, no hay que reconfigurar nada por persona.
+
+### 👤 Crear el primer administrador
+
+El registro público está cerrado: solo se puede crear una cuenta con una invitación (ver [Roles e Invitaciones](#-roles-invitaciones-y-panel-de-administración)). Para el primer usuario (tú, el admin) no hay invitación previa, así que se crea a mano una sola vez:
+
+```bash
+# 1. Genera el hash de tu contraseña
+docker compose exec api node -e "require('bcryptjs').hash('TU_PASSWORD', 10).then(console.log)"
+
+# 2. Inserta el usuario admin con ese hash
+docker compose exec db mysql -uroot -p"$DB_PASSWORD" taskmanager -e \
+  "INSERT INTO users (name, email, password, role) VALUES ('Tu Nombre', 'tu@email.com', '<HASH_GENERADO>', 'admin');"
+```
+
+Inicia sesión con ese email/contraseña y ya puedes invitar al resto del equipo desde `/admin`.
 
 Comandos útiles:
 ```bash
@@ -46,6 +61,8 @@ cp .env.example .env
 mysql -u root -p < schema.sql
 npm run dev
 ```
+
+El registro está cerrado por invitación (ver sección de [Roles e Invitaciones](#-roles-invitaciones-y-panel-de-administración)). Para tu primer usuario admin, insértalo directamente en MySQL igual que en el flujo con Docker de arriba.
 
 ### 2. Frontend
 
@@ -70,17 +87,19 @@ task-manager-api/      # Backend Node.js + Express
 task-manager-frontend/ # Frontend React + Vite
 docker-compose.yml     # Orquesta db + api + web
 setup.sh               # Setup de un solo comando
+cloudflared/           # Plantilla de config para exponer el proyecto a internet
 ```
 
 ## ✨ Características y Acciones Disponibles
 
 - 📋 **Tablero Kanban Interactivo**: Organización visual de tareas por columnas (`To Do`, `In Progress`, `Done`) con soporte de **Drag & Drop** en tiempo real.
-- 🎯 **Gestión Completa de Proyectos y Tareas**: Creación, edición, eliminación y filtrado por prioridad (`Baja`, `Media`, `Alta`) y fechas de vencimiento.
-- 💬 **Comentarios en Hilo (Threaded Comments)**: Discusión estructurada por tarea con soporte para respuestas anidadas y eliminación por autor.
+- 🎯 **Gestión Completa de Proyectos y Tareas**: Espacio de equipo compartido — todos ven los mismos proyectos y tareas, filtrables por prioridad (`Baja`, `Media`, `Alta`) y fechas de vencimiento.
+- 💬 **Comentarios en Hilo (Threaded Comments)**: Discusión estructurada por tarea con soporte para respuestas anidadas.
 - 📎 **Archivos Adjuntos**: Carga y descarga dinámica de archivos directamente desde el panel de tareas.
+- 👥 **Roles, Invitaciones y Panel de Administración**: El admin invita colaboradores por email y controla quién puede borrar contenido — ver [detalle abajo](#-roles-invitaciones-y-panel-de-administración).
 - 📊 **Analytics e Informes de Productividad**: Gráficos interactivos de barra y dona (vía Recharts) para medir tareas por estado, prioridad y tasa de completado.
-- 🛡️ **Protección Anti-IDOR Integrada**: Validación de pertenencia en todas las rutas de API para garantizar que ningún usuario acceda o modifique recursos ajenos.
-- ✉️ **Notificaciones por Email (Resend)**: Envío automático de correos en eventos clave (creación de tarea, cambio de estado, nuevos comentarios).
+- 🛡️ **Registro Cerrado por Invitación**: Nadie puede crear una cuenta sin un token de invitación válido enviado por un administrador.
+- ✉️ **Notificaciones por Email (Resend)**: Envío automático de correos en eventos clave (creación de tarea, cambio de estado, nuevos comentarios, invitaciones).
 
 ## 📖 Guía Visual de Funcionamiento y Mockups de Pantalla
 
@@ -123,7 +142,7 @@ Cada tarjeta cuenta con su propio panel modal de discusión estructurada.
 ├────────────────────────────────────────────────────────────────────────┤
 │ 👤 Carlos Dev  (01/Aug 14:30)                                          │
 │ └─ "Ya agregué el middleware de JWT. Falta probar las cookies."        │
-│    [ ↩️ Responder ]  [ 🗑️ Eliminar ]                                   │
+│    [ ↩️ Responder ]  [ 🗑️ Eliminar ]* (*solo visible para el admin)     │
 │                                                                        │
 │    └─ 👤 Ana Tech Lead  (01/Aug 14:35)                                │
 │       └─ "Excelente Carlos. Recuerda validar la expiración a 24h."     │
@@ -137,9 +156,9 @@ Cada tarjeta cuenta con su propio panel modal de discusión estructurada.
 ```
 
 #### Acciones en Comentarios:
-- **Publicar en Hilo**: Haz clic en el ícono `💬` de cualquier tarjeta.
+- **Publicar en Hilo**: Haz clic en el ícono `💬` de cualquier tarjeta. Cualquier miembro del equipo (admin o becario) puede comentar.
 - **Respuestas Anidadas**: Haz clic en `Responder` debajo de un comentario para abrir el cuadro de respuesta hijo.
-- **Eliminación Segura**: Solo el autor original puede eliminar su propio comentario.
+- **Eliminación Restringida**: Solo el administrador puede eliminar comentarios (de cualquier persona); los becarios no ven el botón de borrar.
 
 ---
 
@@ -153,11 +172,12 @@ Permite subir evidencias, diagramas de arquitectura o requerimientos en PDF, PNG
 │ 📤 [ Subir archivo ]  (Arrastra o selecciona de tu equipo)             │
 │                                                                        │
 │ 📄 diagram_arquitectura.png   (Subido por Carlos Dev)                  │
-│    [ 📥 Descargar ]  [ 🗑️ Eliminar ]                                   │
+│    [ 📥 Descargar ]  [ 🗑️ Eliminar ]*                                  │
 │                                                                        │
 │ 📦 requerimientos_v1.pdf      (Subido por Ana Tech Lead)               │
-│    [ 📥 Descargar ]  [ 🗑️ Eliminar ]                                   │
+│    [ 📥 Descargar ]  [ 🗑️ Eliminar ]*                                  │
 └────────────────────────────────────────────────────────────────────────┘
+* Eliminar solo lo ve el administrador. Cualquiera puede subir y descargar.
 ```
 
 ---
@@ -198,11 +218,63 @@ flowchart LR
     C -- No --> E[📝 Log de consola de desarrollo]
 ```
 
+---
+
+### 6. 👥 Roles, Invitaciones y Panel de Administración
+
+Espacio de equipo compartido con dos roles: **admin** (control total) y **guest/becario** (colaborador). El registro público está cerrado — la única forma de crear una cuenta es con un link de invitación de un solo uso que genera el admin.
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ 🛠️ Panel de administración                                            │
+├────────────────────────────────────────────────────────────────────────┤
+│ Crear invitación                                                       │
+│  Email: [ becario@email.com ]   Rol: [ Becario (guest) ▾ ]  [Enviar]   │
+├────────────────────────────────────────────────────────────────────────┤
+│ Invitaciones                                                           │
+│  becario1@mail.com   guest   🟡 Pendiente   invitado por Admin  [Revocar]│
+│  becario2@mail.com   guest   🟢 Usada       invitado por Admin          │
+├────────────────────────────────────────────────────────────────────────┤
+│ Usuarios registrados                                                   │
+│  Admin Test      admin@mail.com      admin                             │
+│  Becario Uno     becario1@mail.com   guest                             │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Qué puede hacer cada rol:
+
+| Acción                          | Admin | Guest (becario) |
+|----------------------------------|:-----:|:----------------:|
+| Ver proyectos y tareas del equipo | ✅ | ✅ |
+| Crear tareas, comentar, subir adjuntos | ✅ | ✅ |
+| Editar tareas                    | ✅ | ✅ |
+| Crear/editar/borrar proyectos     | ✅ | ❌ |
+| Borrar tareas, comentarios o adjuntos | ✅ | ❌ |
+| Crear invitaciones / ver `/admin` | ✅ | ❌ |
+
+#### Cómo invitar a alguien:
+1. Entra a `/admin` (solo visible si tu cuenta es admin).
+2. Escribe el email del colaborador y elige su rol.
+3. Se le envía un correo con un link de un solo uso (`/register?token=...`), válido por 7 días.
+4. Al registrarse, su cuenta queda con el rol que le asignaste — no puede elegirlo él mismo.
+
+## 🌐 Exposición a Internet (Cloudflare Tunnel)
+
+Para que el equipo entre desde fuera de tu red (no solo LAN/VPN), usa [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) en vez de abrir puertos en tu router: no expone tu IP ni requiere port-forwarding, y da HTTPS gratis.
+
+1. Instala y autentica `cloudflared`, crea el túnel y sus rutas DNS (dos subdominios: `app.` para el frontend, `api.` para el backend).
+2. Copia `cloudflared/config.yml.example` a `cloudflared/config.yml` y completa tus datos.
+3. En `.env`, define `FRONTEND_URL`, `VITE_API_URL` y `ALLOWED_ORIGIN` con tus URLs públicas (`VITE_API_URL` se hornea en el build, así que corre `docker compose up -d --build` después de cambiarla).
+4. Corre `cloudflared tunnel run <nombre-del-tunel>` (o instálalo como servicio para que persista).
+
+Nunca actives port-forwarding en el router para los puertos 3000/8080 — el túnel abre la conexión hacia afuera, no necesitas abrir nada entrante.
+
 ## 🔒 Notas de seguridad al compartir con el equipo
 
 - Cambia `JWT_SECRET` y `DB_PASSWORD` en `.env` antes de usarlo con gente real (el script ya genera el `JWT_SECRET` por ti).
-- Si el servidor va a tener una URL fija dentro de tu red, define `ALLOWED_ORIGIN` en `.env` para que la API solo acepte pedidos desde ahí.
+- Si el servidor va a tener una URL fija dentro de tu red, define `ALLOWED_ORIGIN` en `.env` para que la API solo acepte pedidos desde ahí (o la URL pública si usas Cloudflare Tunnel).
 - MySQL no expone ningún puerto fuera de la red interna de Docker — solo el backend puede hablarle.
+- El registro está cerrado por invitación: nadie entra sin que el admin lo invite explícitamente, y solo el admin puede borrar contenido.
 
 ## 📝 Licencia
 

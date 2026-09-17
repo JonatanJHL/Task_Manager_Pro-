@@ -5,6 +5,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Vite "hornea" las variables VITE_* dentro del bundle en build time, no se
+# pueden cambiar después arrancando el contenedor con otro valor.
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 COPY . .
 RUN npm run build
 

@@ -34,6 +34,7 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY}
       FROM_EMAIL: ${FROM_EMAIL}
       ALLOWED_ORIGIN: ${ALLOWED_ORIGIN}
+      FRONTEND_URL: ${FRONTEND_URL}
     volumes:
       - uploads_data:/app/uploads
     networks:
@@ -42,7 +43,10 @@ services:
       - "3000:3000"
 
   web:
-    build: ./task-manager-frontend
+    build:
+      context: ./task-manager-frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
     restart: unless-stopped
     depends_on:
       - api

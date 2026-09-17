@@ -1,0 +1,14 @@
+# Copia este archivo como config.yml (en esta misma carpeta) y reemplaza:
+# - <TUNNEL_ID>: lo imprime "cloudflared tunnel create task-manager-pro"
+# - <TU_USUARIO>: tu usuario del sistema
+# - tudominio.com: tu dominio real ya agregado a Cloudflare
+
+tunnel: <TUNNEL_ID>
+credentials-file: /Users/<TU_USUARIO>/.cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: app.tudominio.com
+    service: http://localhost:8080
+  - hostname: api.tudominio.com
+    service: http://localhost:3000
+  - service: http_status:404

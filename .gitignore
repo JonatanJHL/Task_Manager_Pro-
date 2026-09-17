@@ -30,3 +30,6 @@ build/
 *.pem
 *.key
 credentials.json
+
+# Cloudflare Tunnel (config real es específica de cada máquina)
+cloudflared/config.yml
