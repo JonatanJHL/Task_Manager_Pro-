@@ -13,6 +13,8 @@ export default function Admin() {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [projectMembers, setProjectMembers] = useState({});
   const [form, setForm] = useState({ email: '', role: 'guest' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -20,6 +22,7 @@ export default function Admin() {
   useEffect(() => {
     loadUsers();
     loadInvitations();
+    loadProjects();
   }, []);
 
   const loadUsers = async () => {
@@ -30,6 +33,33 @@ export default function Admin() {
   const loadInvitations = async () => {
     try { const { data } = await api.get('/invitations'); setInvitations(data); }
     catch { setInvitations([]); }
+  };
+
+  const loadProjects = async () => {
+    try {
+      const { data } = await api.get('/projects');
+      setProjects(data);
+      const entries = await Promise.all(
+        data.map(async (p) => {
+          const { data: members } = await api.get(`/projects/${p.id}/members`);
+          return [p.id, members];
+        })
+      );
+      setProjectMembers(Object.fromEntries(entries));
+    } catch {
+      setProjects([]);
+    }
+  };
+
+  const handleAddMember = async (projectId, userId) => {
+    if (!userId) return;
+    await api.post(`/projects/${projectId}/members`, { user_id: Number(userId) });
+    loadProjects();
+  };
+
+  const handleRemoveMember = async (projectId, userId) => {
+    await api.delete(`/projects/${projectId}/members/${userId}`);
+    loadProjects();
   };
 
   const handleInvite = async (e) => {
@@ -133,6 +163,44 @@ export default function Admin() {
                 })}
               </tbody>
             </table>
+          )}
+        </section>
+
+        <section style={{ background: 'white', borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginBottom: 4 }}>Proyectos y miembros</h3>
+          <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>
+            Un becario solo ve y trabaja en los proyectos donde está asignado. Las tareas dentro de cada proyecto las genera cada quien.
+          </p>
+          {projects.length === 0 ? <p style={{ color: '#64748b' }}>No hay proyectos todavía</p> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {projects.map(p => {
+                const members = projectMembers[p.id] || [];
+                const memberIds = new Set(members.map(m => m.id));
+                const availableGuests = users.filter(u => u.role === 'guest' && !memberIds.has(u.id));
+                return (
+                  <div key={p.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 14 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 8 }}>{p.name}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                      {members.length === 0 && <span style={{ color: '#94a3b8', fontSize: 13 }}>Sin becarios asignados</span>}
+                      {members.map(m => (
+                        <span key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#e0e7ff', color: '#3730a3', padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600 }}>
+                          {m.name}
+                          <button onClick={() => handleRemoveMember(p.id, m.id)}
+                            style={{ border: 'none', background: 'none', color: '#3730a3', cursor: 'pointer', fontWeight: 700, padding: 0 }}
+                            title="Quitar del proyecto">×</button>
+                        </span>
+                      ))}
+                    </div>
+                    <select value="" onChange={e => handleAddMember(p.id, e.target.value)} style={{ fontSize: 13 }}>
+                      <option value="">+ Agregar becario…</option>
+                      {availableGuests.map(u => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </section>
 

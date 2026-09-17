@@ -2,11 +2,16 @@ const Comment = require('../models/commentModel');
 const Task = require('../models/taskModel');
 const ActivityLog = require('../models/activityLogModel');
 const emailService = require('../services/emailService');
+const { canAccessProject } = require('../utils/projectAccess');
 
 const getComments = async (req, res) => {
   try {
     const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    if (!(await canAccessProject(req.user, task.project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
+    }
 
     const comments = await Comment.getByTask(req.params.taskId);
     const tree = buildCommentTree(comments);
@@ -21,6 +26,10 @@ const createComment = async (req, res) => {
   try {
     const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    if (!(await canAccessProject(req.user, task.project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
+    }
 
     const { content, parent_id } = req.body;
     if (!content) return res.status(400).json({ error: 'Contenido requerido' });

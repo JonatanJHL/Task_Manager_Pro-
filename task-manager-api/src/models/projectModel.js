@@ -5,6 +5,16 @@ const getAll = async () => {
   return rows;
 };
 
+const getAllForUser = async (userId) => {
+  const [rows] = await db.query(`
+    SELECT p.* FROM projects p
+    JOIN project_members pm ON pm.project_id = p.id
+    WHERE pm.user_id = ?
+    ORDER BY p.created_at DESC
+  `, [userId]);
+  return rows;
+};
+
 const getById = async (id) => {
   const [rows] = await db.query('SELECT * FROM projects WHERE id = ?', [id]);
   return rows[0];
@@ -34,4 +44,4 @@ const remove = async (id) => {
   }
 };
 
-module.exports = { getAll, getById, create, remove };
+module.exports = { getAll, getAllForUser, getById, create, remove };

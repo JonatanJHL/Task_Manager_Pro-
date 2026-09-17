@@ -1,12 +1,17 @@
 const Attachment = require('../models/attachmentModel');
 const Task = require('../models/taskModel');
 const ActivityLog = require('../models/activityLogModel');
+const { canAccessProject } = require('../utils/projectAccess');
 const fs = require('fs');
 
 const getAttachments = async (req, res) => {
   try {
     const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    if (!(await canAccessProject(req.user, task.project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
+    }
 
     const attachments = await Attachment.getByTask(req.params.taskId);
     res.json(attachments);
@@ -19,6 +24,10 @@ const createAttachment = async (req, res) => {
   try {
     const task = await Task.getById(req.params.taskId);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    if (!(await canAccessProject(req.user, task.project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
+    }
 
     if (!req.file) return res.status(400).json({ error: 'Archivo requerido' });
 
@@ -60,6 +69,11 @@ const downloadAttachment = async (req, res) => {
     const attachment = await Attachment.getById(req.params.id);
     if (!attachment) {
       return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+
+    const task = await Task.getById(attachment.task_id);
+    if (!task || !(await canAccessProject(req.user, task.project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este archivo' });
     }
 
     res.download(attachment.filepath);

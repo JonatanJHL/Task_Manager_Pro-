@@ -2,10 +2,16 @@ const Task = require('../models/taskModel');
 const Project = require('../models/projectModel');
 const ActivityLog = require('../models/activityLogModel');
 const emailService = require('../services/emailService');
+const { canAccessProject } = require('../utils/projectAccess');
 
 const getTasks = async (req, res) => {
   try {
     const { project_id } = req.query;
+
+    if (project_id && !(await canAccessProject(req.user, project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
+    }
+
     const tasks = await Task.getAll(project_id);
     res.json(tasks);
   } catch (err) {
@@ -18,6 +24,11 @@ const getTask = async (req, res) => {
   try {
     const task = await Task.getById(req.params.id);
     if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    if (!(await canAccessProject(req.user, task.project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
+    }
+
     res.json(task);
   } catch (err) {
     console.error('Error getTask:', err);
@@ -35,6 +46,10 @@ const createTask = async (req, res) => {
     const project = await Project.getById(project_id);
     if (!project) {
       return res.status(404).json({ error: 'Proyecto no encontrado' });
+    }
+
+    if (!(await canAccessProject(req.user, project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
     }
 
     const id = await Task.create({
@@ -60,6 +75,10 @@ const updateTask = async (req, res) => {
   try {
     const oldTask = await Task.getById(req.params.id);
     if (!oldTask) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    if (!(await canAccessProject(req.user, oldTask.project_id))) {
+      return res.status(403).json({ error: 'No tienes acceso a este proyecto' });
+    }
 
     await Task.update(req.params.id, req.body);
 
