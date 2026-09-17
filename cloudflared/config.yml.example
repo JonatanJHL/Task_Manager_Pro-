@@ -2,13 +2,19 @@
 # - <TUNNEL_ID>: lo imprime "cloudflared tunnel create task-manager-pro"
 # - <TU_USUARIO>: tu usuario del sistema
 # - tudominio.com: tu dominio real ya agregado a Cloudflare
+#
+# Un solo hostname para todo: /api/* va al backend, el resto al frontend.
+# El orden importa - la regla de /api/* debe ir ANTES que la regla general.
+# Si prefieres dos subdominios separados (app./api.), usa dos bloques con
+# "hostname" distinto en vez de "path", uno por servicio.
 
 tunnel: <TUNNEL_ID>
 credentials-file: /Users/<TU_USUARIO>/.cloudflared/<TUNNEL_ID>.json
 
 ingress:
-  - hostname: app.tudominio.com
-    service: http://localhost:8080
-  - hostname: api.tudominio.com
+  - hostname: tudominio.com
+    path: ^/api/.*
     service: http://localhost:3000
+  - hostname: tudominio.com
+    service: http://localhost:8080
   - service: http_status:404

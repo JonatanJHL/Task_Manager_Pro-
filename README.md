@@ -4,7 +4,7 @@
 
 # Task Manager Pro
 
-**Aplicación full-stack para gestión de tareas con sistema Kanban, drag & drop, comentarios, archivos adjuntos, analytics con gráficos interactivos, notificaciones por email automatizadas, y panel de administración con roles e invitaciones para colaborar en equipo.**
+**Aplicación full-stack para gestión de tareas con sistema Kanban, drag & drop, comentarios, archivos adjuntos, analytics con gráficos interactivos, notificaciones por email automatizadas, y panel de administración con roles, invitaciones y asignación de becarios a proyectos para colaborar en equipo.**
 
 [![Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20React%20%7C%20MySQL%20%7C%20Docker-blue)](#)
 [![License](https://img.shields.io/badge/License-MIT-green)](#)
@@ -93,13 +93,16 @@ cloudflared/           # Plantilla de config para exponer el proyecto a internet
 ## ✨ Características y Acciones Disponibles
 
 - 📋 **Tablero Kanban Interactivo**: Organización visual de tareas por columnas (`To Do`, `In Progress`, `Done`) con soporte de **Drag & Drop** en tiempo real.
-- 🎯 **Gestión Completa de Proyectos y Tareas**: Espacio de equipo compartido — todos ven los mismos proyectos y tareas, filtrables por prioridad (`Baja`, `Media`, `Alta`) y fechas de vencimiento.
+- 🎯 **Gestión de Proyectos y Tareas por Membresía**: Un becario solo ve y trabaja en los proyectos donde el admin lo asignó; dentro de cada proyecto asignado, las tareas las genera libremente cada quien. El admin ve todos los proyectos sin restricción.
+- 🧑‍💻 **Atribución de Tareas**: Cada tarjeta muestra avatar y nombre de quién la creó.
+- 👀 **Vista de Equipo (admin)**: `/team` — KPIs del equipo (activas, completadas en la semana, vencidas, becarios activos), progreso por becario y feed de actividad reciente en tiempo real.
+- 🧾 **Log de Actividad**: Registro histórico de tareas creadas, cambios de estado, comentarios, archivos subidos y proyectos creados — quién hizo qué y cuándo.
 - 💬 **Comentarios en Hilo (Threaded Comments)**: Discusión estructurada por tarea con soporte para respuestas anidadas.
 - 📎 **Archivos Adjuntos**: Carga y descarga dinámica de archivos directamente desde el panel de tareas.
-- 👥 **Roles, Invitaciones y Panel de Administración**: El admin invita colaboradores por email y controla quién puede borrar contenido — ver [detalle abajo](#-roles-invitaciones-y-panel-de-administración).
-- 📊 **Analytics e Informes de Productividad**: Gráficos interactivos de barra y dona (vía Recharts) para medir tareas por estado, prioridad y tasa de completado.
+- 👥 **Roles, Invitaciones y Panel de Administración**: El admin invita colaboradores por email, los asigna a proyectos y controla quién puede borrar contenido — ver [detalle abajo](#-roles-invitaciones-y-panel-de-administración).
+- 📊 **Analytics e Informes de Productividad**: Gráficos interactivos de barra y dona (vía Recharts) para medir tareas por estado, prioridad y tasa de completado (vista personal, por usuario).
 - 🛡️ **Registro Cerrado por Invitación**: Nadie puede crear una cuenta sin un token de invitación válido enviado por un administrador.
-- ✉️ **Notificaciones por Email (Resend)**: Envío automático de correos en eventos clave (creación de tarea, cambio de estado, nuevos comentarios, invitaciones).
+- ✉️ **Notificaciones por Email (Resend)**: Envío automático de correos en eventos clave (creación de tarea, cambio de estado, nuevos comentarios, invitaciones, asignación a un proyecto).
 
 ## 📖 Guía Visual de Funcionamiento y Mockups de Pantalla
 
@@ -222,7 +225,7 @@ flowchart LR
 
 ### 6. 👥 Roles, Invitaciones y Panel de Administración
 
-Espacio de equipo compartido con dos roles: **admin** (control total) y **guest/becario** (colaborador). El registro público está cerrado — la única forma de crear una cuenta es con un link de invitación de un solo uso que genera el admin.
+Dos roles: **admin** (control total) y **guest/becario** (colaborador). El registro público está cerrado — la única forma de crear una cuenta es con un link de invitación de un solo uso que genera el admin. Un becario, además, **solo ve los proyectos donde el admin lo asignó explícitamente** — dentro de esos proyectos, genera y trabaja sus propias tareas libremente.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -235,6 +238,10 @@ Espacio de equipo compartido con dos roles: **admin** (control total) y **guest/
 │  becario1@mail.com   guest   🟡 Pendiente   invitado por Admin  [Revocar]│
 │  becario2@mail.com   guest   🟢 Usada       invitado por Admin          │
 ├────────────────────────────────────────────────────────────────────────┤
+│ Proyectos y miembros                                                   │
+│  (ALEX) Módulo de tickets   [ Alexander × ]   [+ Agregar becario ▾]    │
+│  (OSCAR) Servicios/cliente  Sin becarios asignados [+ Agregar becario ▾]│
+├────────────────────────────────────────────────────────────────────────┤
 │ Usuarios registrados                                                   │
 │  Admin Test      admin@mail.com      admin                             │
 │  Becario Uno     becario1@mail.com   guest                             │
@@ -245,27 +252,56 @@ Espacio de equipo compartido con dos roles: **admin** (control total) y **guest/
 
 | Acción                          | Admin | Guest (becario) |
 |----------------------------------|:-----:|:----------------:|
-| Ver proyectos y tareas del equipo | ✅ | ✅ |
-| Crear tareas, comentar, subir adjuntos | ✅ | ✅ |
-| Editar tareas                    | ✅ | ✅ |
+| Ver proyectos y tareas           | Todos | Solo donde está asignado |
+| Crear tareas, comentar, subir adjuntos (en proyectos con acceso) | ✅ | ✅ |
+| Editar tareas (en proyectos con acceso) | ✅ | ✅ |
 | Crear/editar/borrar proyectos     | ✅ | ❌ |
+| Asignar/quitar becarios de un proyecto | ✅ | ❌ |
 | Borrar tareas, comentarios o adjuntos | ✅ | ❌ |
 | Crear invitaciones / ver `/admin` | ✅ | ❌ |
+| Ver `/team` (pulso del equipo)    | ✅ | ❌ |
 
 #### Cómo invitar a alguien:
 1. Entra a `/admin` (solo visible si tu cuenta es admin).
 2. Escribe el email del colaborador y elige su rol.
 3. Se le envía un correo con un link de un solo uso (`/register?token=...`), válido por 7 días.
 4. Al registrarse, su cuenta queda con el rol que le asignaste — no puede elegirlo él mismo.
+5. En la sección **Proyectos y miembros** de `/admin`, asígnalo a los proyectos donde debe trabajar — recibe un correo avisándole. Sin esta asignación, no ve ningún proyecto.
+
+---
+
+### 7. 📈 Vista de Equipo y Log de Actividad (admin)
+
+Página `/team`, visible solo para admin, con el pulso del equipo en tiempo real:
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ 👥 Pulso del equipo                                                    │
+├──────────────┬──────────────┬──────────────┬──────────────────────────┤
+│ 14 Activas   │ 9 Completadas│ 3 Becarios   │ 2 Vencidas               │
+│              │ esta semana  │ activos      │                          │
+├──────────────┴──────────────┴──────────────┴──────────────────────────┤
+│ Becarios                              │ Actividad reciente             │
+│  Alexander  ▓▓░░░ 2 pend·1 curso·5 ok │  Mario completó "Endpoint..."  │
+│  Mario      ▓░░░░ 1 pend·2 curso·2 ok │  Alexander comentó en "..."    │
+│  Oscar      ▓▓▓░░ 3 pend·1 curso·2 ok │  Oscar subió un archivo a "..."│
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+Cada tarjeta de tarea en el tablero muestra además el avatar y nombre de quién la creó. El feed de actividad y el desglose por becario se alimentan de una tabla `activity_log` que registra: tarea creada, cambio de estado (de → a), comentario, archivo subido y proyecto creado.
 
 ## 🌐 Exposición a Internet (Cloudflare Tunnel)
 
 Para que el equipo entre desde fuera de tu red (no solo LAN/VPN), usa [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) en vez de abrir puertos en tu router: no expone tu IP ni requiere port-forwarding, y da HTTPS gratis.
 
-1. Instala y autentica `cloudflared`, crea el túnel y sus rutas DNS (dos subdominios: `app.` para el frontend, `api.` para el backend).
-2. Copia `cloudflared/config.yml.example` a `cloudflared/config.yml` y completa tus datos.
-3. En `.env`, define `FRONTEND_URL`, `VITE_API_URL` y `ALLOWED_ORIGIN` con tus URLs públicas (`VITE_API_URL` se hornea en el build, así que corre `docker compose up -d --build` después de cambiarla).
+**Un solo hostname para todo** (recomendado): en vez de dos subdominios separados (`app.` y `api.`), se rutea `/api/*` al backend y el resto al frontend, ambos bajo el mismo dominio. Esto evita CORS entre dominios y es más robusto si tu cuenta de Cloudflare ya tiene Workers/Pages con rutas wildcard (`*.tudominio.com/*`) — esas rutas interceptan el tráfico *antes* de llegar al túnel y pueden "tragarse" un subdominio nuevo sin que dé ningún error obvio; usar un solo hostname existente esquiva ese problema por completo.
+
+1. Instala y autentica `cloudflared`, crea el túnel (`cloudflared tunnel create <nombre>`) y su ruta DNS (`cloudflared tunnel route dns <nombre> tudominio.com`).
+2. Copia `cloudflared/config.yml.example` a `cloudflared/config.yml` y completa `<TUNNEL_ID>` y tu dominio. El ingress ya viene configurado con la regla de `path: ^/api/.*` apuntando al backend antes que la regla general del frontend — el orden importa, esa regla debe ir primero.
+3. En `.env`, define `FRONTEND_URL` y `ALLOWED_ORIGIN` con tu URL pública, y `VITE_API_URL=https://tudominio.com/api` (mismo dominio, con `/api`). `VITE_API_URL` se hornea en el build, así que corre `docker compose build web && docker compose up -d web` después de cambiarla.
 4. Corre `cloudflared tunnel run <nombre-del-tunel>` (o instálalo como servicio para que persista).
+
+Si algo responde 404 de forma rara (funciona la raíz pero no `/api/...`, o viceversa, y ni reiniciar el túnel ni recrear el DNS lo arregla), revisa **Workers Routes** en el dashboard de Cloudflare de esa zona — un wildcard preexistente de otro proyecto tuyo puede estar interceptando el hostname nuevo. Agregar una ruta más específica con Worker en "None" para tu hostname soluciona el conflicto sin tocar la ruta original.
 
 Nunca actives port-forwarding en el router para los puertos 3000/8080 — el túnel abre la conexión hacia afuera, no necesitas abrir nada entrante.
 
