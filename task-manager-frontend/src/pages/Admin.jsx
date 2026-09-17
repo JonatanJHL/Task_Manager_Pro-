@@ -60,6 +60,9 @@ export default function Admin() {
           <Link to="/dashboard" style={{ padding: '8px 16px', background: '#10b981', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
             📋 Dashboard
           </Link>
+          <Link to="/team" style={{ padding: '8px 16px', background: '#0ea5e9', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
+            👥 Equipo
+          </Link>
           <div className="avatar">{user?.name?.charAt(0).toUpperCase()}</div>
           <span>{user?.name}</span>
           <button className="btn btn-secondary" onClick={logout}>Salir</button>

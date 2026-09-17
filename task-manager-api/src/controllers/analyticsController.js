@@ -1,4 +1,5 @@
 const db = require('../../config/db');
+const ActivityLog = require('../models/activityLogModel');
 
 const getAnalytics = async (req, res) => {
   try {
@@ -93,6 +94,58 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+const getTeamOverview = async (req, res) => {
+  try {
+    const [kpis] = await db.query(`
+      SELECT
+        SUM(CASE WHEN status IN ('pending','in_progress') THEN 1 ELSE 0 END) as activeTasks,
+        SUM(CASE WHEN status = 'done' AND updated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as completedThisWeek,
+        SUM(CASE WHEN due_date < CURDATE() AND status != 'done' THEN 1 ELSE 0 END) as overdueTasks
+      FROM tasks
+    `);
+
+    const [members] = await db.query(`
+      SELECT
+        u.id, u.name, u.role,
+        SUM(CASE WHEN t.status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN t.status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+        SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END) as done,
+        SUM(CASE WHEN t.due_date < CURDATE() AND t.status != 'done' THEN 1 ELSE 0 END) as overdue
+      FROM users u
+      LEFT JOIN tasks t ON t.user_id = u.id
+      WHERE u.role = 'guest'
+      GROUP BY u.id, u.name, u.role
+      ORDER BY u.name ASC
+    `);
+
+    const lastActivityRows = await ActivityLog.getLastActivityByUser();
+    const lastActivityByUser = Object.fromEntries(lastActivityRows.map(r => [r.user_id, r.lastActivity]));
+    members.forEach(m => { m.lastActivity = lastActivityByUser[m.id] || null; });
+
+    const [activeBecarios] = await db.query(`
+      SELECT COUNT(DISTINCT user_id) as count FROM tasks t
+      JOIN users u ON u.id = t.user_id
+      WHERE u.role = 'guest' AND t.status != 'done'
+    `);
+
+    const activity = await ActivityLog.getRecent(15);
+
+    res.json({
+      kpis: {
+        activeTasks: kpis[0]?.activeTasks || 0,
+        completedThisWeek: kpis[0]?.completedThisWeek || 0,
+        overdueTasks: kpis[0]?.overdueTasks || 0,
+        activeBecarios: activeBecarios[0]?.count || 0,
+      },
+      members,
+      activity,
+    });
+  } catch (err) {
+    console.error('Error en team overview:', err);
+    res.status(500).json({ error: 'Error al obtener el resumen del equipo' });
+  }
+};
+
 const getReportData = async (userId) => {
   const [stats] = await db.query(`
     SELECT 
@@ -124,4 +177,4 @@ const getReportData = async (userId) => {
   };
 };
 
-module.exports = { getAnalytics, getReportData };
+module.exports = { getAnalytics, getTeamOverview, getReportData };

@@ -294,7 +294,17 @@ function TaskCard({ task, onEdit, onDelete, onStatusChange, onComments, onFiles,
         <span className={`badge badge-${task.status}`}>{task.status === 'pending' ? 'Pendiente' : task.status === 'in_progress' ? 'En progreso' : 'Completada'}</span>
         <span className={`badge badge-${task.priority}`}>{task.priority === 'low' ? 'Baja' : task.priority === 'medium' ? 'Media' : 'Alta'}</span>
       </div>
-      {task.due_date && <div className="task-due">📅 {formatDate(task.due_date)}</div>}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+        {task.due_date ? <div className="task-due" style={{ margin: 0 }}>📅 {formatDate(task.due_date)}</div> : <span />}
+        {task.user_name && (
+          <div title={`Creada por ${task.user_name}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748b' }}>
+            <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#e0e7ff', color: '#3730a3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>
+              {task.user_name.charAt(0).toUpperCase()}
+            </span>
+            {task.user_name}
+          </div>
+        )}
+      </div>
       <div className="task-actions">
         <button className="edit-btn" onClick={() => onEdit(task)}>Editar</button>
         <button className="edit-btn" onClick={() => onComments(task.id)}>💬</button>
@@ -445,9 +455,14 @@ export default function Dashboard() {
             📊 Analytics
           </Link>
           {user?.role === 'admin' && (
-            <Link to="/admin" style={{ padding: '8px 16px', background: '#6366f1', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
-              🛠️ Admin
-            </Link>
+            <>
+              <Link to="/team" style={{ padding: '8px 16px', background: '#0ea5e9', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
+                👥 Equipo
+              </Link>
+              <Link to="/admin" style={{ padding: '8px 16px', background: '#6366f1', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
+                🛠️ Admin
+              </Link>
+            </>
           )}
           <div className="avatar">{user?.name?.charAt(0).toUpperCase()}</div>
           <span>{user?.name}</span>

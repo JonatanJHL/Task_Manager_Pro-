@@ -1,7 +1,7 @@
 const db = require('../../config/db');
 
 const getAll = async (projectId) => {
-  let query = 'SELECT * FROM tasks';
+  let query = 'SELECT tasks.*, users.name AS user_name FROM tasks JOIN users ON users.id = tasks.user_id';
   const params = [];
 
   if (projectId) {
@@ -9,7 +9,7 @@ const getAll = async (projectId) => {
     params.push(projectId);
   }
 
-  query += ' ORDER BY created_at DESC';
+  query += ' ORDER BY tasks.created_at DESC';
   const [rows] = await db.query(query, params);
   return rows;
 };

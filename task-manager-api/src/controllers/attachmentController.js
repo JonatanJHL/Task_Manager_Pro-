@@ -1,5 +1,6 @@
 const Attachment = require('../models/attachmentModel');
 const Task = require('../models/taskModel');
+const ActivityLog = require('../models/activityLogModel');
 const fs = require('fs');
 
 const getAttachments = async (req, res) => {
@@ -28,6 +29,8 @@ const createAttachment = async (req, res) => {
       task_id: req.params.taskId,
       user_id: req.user.id
     });
+
+    ActivityLog.create({ user_id: req.user.id, action: 'attachment_added', task_id: task.id, project_id: task.project_id, details: req.file.originalname });
 
     res.status(201).json({ id, filename: req.file.originalname, message: 'Archivo subido' });
   } catch (err) {

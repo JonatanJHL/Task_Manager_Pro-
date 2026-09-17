@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import Admin from './pages/Admin';
+import Team from './pages/Team';
 
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();
@@ -32,6 +33,9 @@ export default function App() {
           } />
           <Route path="/admin" element={
             <AdminRoute><Admin /></AdminRoute>
+          } />
+          <Route path="/team" element={
+            <AdminRoute><Team /></AdminRoute>
           } />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>

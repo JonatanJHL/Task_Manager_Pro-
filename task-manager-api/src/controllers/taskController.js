@@ -1,5 +1,6 @@
 const Task = require('../models/taskModel');
 const Project = require('../models/projectModel');
+const ActivityLog = require('../models/activityLogModel');
 const emailService = require('../services/emailService');
 
 const getTasks = async (req, res) => {
@@ -46,6 +47,7 @@ const createTask = async (req, res) => {
     });
 
     emailService.notifyAdmin(emailService.notifyNewTask(req.user.name, title, project?.name || 'Proyecto'));
+    ActivityLog.create({ user_id: req.user.id, action: 'task_created', task_id: id, project_id, details: title });
 
     res.status(201).json({ id, message: 'Tarea creada' });
   } catch (err) {
@@ -61,8 +63,15 @@ const updateTask = async (req, res) => {
 
     await Task.update(req.params.id, req.body);
 
-    if (req.body.status) {
+    if (req.body.status && req.body.status !== oldTask.status) {
       emailService.notifyAdmin(emailService.notifyTaskStatusChange(req.user.name, oldTask.title, req.body.status));
+      ActivityLog.create({
+        user_id: req.user.id,
+        action: 'task_status_changed',
+        task_id: oldTask.id,
+        project_id: oldTask.project_id,
+        details: `${oldTask.status}|${req.body.status}`,
+      });
     }
 
     res.json({ message: 'Tarea actualizada' });

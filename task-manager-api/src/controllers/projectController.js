@@ -1,4 +1,5 @@
 const Project = require('../models/projectModel');
+const ActivityLog = require('../models/activityLogModel');
 const emailService = require('../services/emailService');
 
 const getProjects = async (req, res) => {
@@ -35,6 +36,7 @@ const createProject = async (req, res) => {
     });
 
     emailService.notifyAdmin(emailService.notifyNewProject(req.user.name, name));
+    ActivityLog.create({ user_id: req.user.id, action: 'project_created', project_id: id, details: name });
 
     res.status(201).json({ id, message: 'Proyecto creado' });
   } catch (err) {

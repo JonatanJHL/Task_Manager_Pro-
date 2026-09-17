@@ -1,5 +1,6 @@
 const Comment = require('../models/commentModel');
 const Task = require('../models/taskModel');
+const ActivityLog = require('../models/activityLogModel');
 const emailService = require('../services/emailService');
 
 const getComments = async (req, res) => {
@@ -32,6 +33,7 @@ const createComment = async (req, res) => {
     });
 
     emailService.notifyAdmin(emailService.notifyNewComment(req.user.name, task.title, content));
+    ActivityLog.create({ user_id: req.user.id, action: 'comment_added', task_id: task.id, project_id: task.project_id, details: content.slice(0, 100) });
 
     res.status(201).json({ id, message: 'Comentario agregado' });
   } catch (err) {
