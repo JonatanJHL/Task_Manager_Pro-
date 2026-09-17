@@ -19,8 +19,19 @@ const create = async ({ name, description, user_id }) => {
 };
 
 const remove = async (id) => {
-  const [result] = await db.query('DELETE FROM projects WHERE id = ?', [id]);
-  return result.affectedRows > 0;
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+    await conn.query('DELETE FROM tasks WHERE project_id = ?', [id]);
+    const [result] = await conn.query('DELETE FROM projects WHERE id = ?', [id]);
+    await conn.commit();
+    return result.affectedRows > 0;
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
 };
 
 module.exports = { getAll, getById, create, remove };

@@ -393,6 +393,16 @@ export default function Dashboard() {
     setSelectedProject(data.id);
   };
 
+  const handleDeleteProject = async () => {
+    if (!selectedProject) return;
+    const project = projects.find(p => p.id === selectedProject);
+    if (confirm(`¿Eliminar el proyecto "${project?.name}" y todas sus tareas?`)) {
+      await api.delete(`/projects/${selectedProject}`);
+      setSelectedProject('');
+      await loadProjects();
+    }
+  };
+
   const handleCreateTask = async (form) => {
     await api.post('/tasks', { ...form, project_id: selectedProject });
     loadTasks();
@@ -496,7 +506,10 @@ export default function Dashboard() {
           </div>
           <div className="btn-group">
             {user?.role === 'admin' && (
-              <button className="btn btn-primary" onClick={() => setShowProjectModal(true)}>+ Proyecto</button>
+              <>
+                <button className="btn btn-primary" onClick={() => setShowProjectModal(true)}>+ Proyecto</button>
+                <button className="btn btn-danger" onClick={handleDeleteProject} disabled={!selectedProject}>🗑️ Eliminar proyecto</button>
+              </>
             )}
             <button className="btn btn-success" onClick={() => { setEditingTask(null); setShowTaskModal(true); }} disabled={!selectedProject}>+ Tarea</button>
           </div>
